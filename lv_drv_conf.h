@@ -108,7 +108,8 @@
 #  define SDL_DOUBLE_BUFFERED 0
 
 /*Eclipse: <SDL2/SDL.h>    Visual Studio: <SDL.h>*/
-#  define SDL_INCLUDE_PATH    <SDL2/SDL.h>
+#  define SDL_INCLUDE_PATH    <SDL3/SDL.h>
+//HvdR #  define SDL_INCLUDE_PATH    <SDL3/SDL.h>
 
 /*Open two windows to test multi display support*/
 #  define SDL_DUAL_DISPLAY            0
@@ -135,7 +136,8 @@
 #  define MONITOR_DOUBLE_BUFFERED 0
 
 /*Eclipse: <SDL2/SDL.h>    Visual Studio: <SDL.h>*/
-#  define MONITOR_SDL_INCLUDE_PATH    <SDL2/SDL.h>
+#  define MONITOR_SDL_INCLUDE_PATH    <SDL3/SDL.h>
+//HvdR #  define MONITOR_SDL_INCLUDE_PATH    <SDL3/SDL.h>
 
 /*Open two windows to test multi display support*/
 #  define MONITOR_DUAL            0
@@ -604,7 +606,8 @@
 #  define SDL_DOUBLE_BUFFERED 0
 
 /*Eclipse: <SDL2/SDL.h>    Visual Studio: <SDL.h>*/
-#  define SDL_INCLUDE_PATH    <SDL2/SDL.h>
+#  define SDL_INCLUDE_PATH    <SDL3/SDL.h>
+//HvdR #  define SDL_INCLUDE_PATH    <SDL3/SDL.h>
 
 /*Open two windows to test multi display support*/
 #  define SDL_DUAL_DISPLAY            0
@@ -631,7 +634,8 @@
 #  define MONITOR_DOUBLE_BUFFERED 0
 
 /*Eclipse: <SDL2/SDL.h>    Visual Studio: <SDL.h>*/
-#  define MONITOR_SDL_INCLUDE_PATH    <SDL2/SDL.h>
+#  define MONITOR_SDL_INCLUDE_PATH    <SDL3/SDL.h>
+//HvdR #  define MONITOR_SDL_INCLUDE_PATH    <SDL3/SDL.h>
 
 /*Open two windows to test multi display support*/
 #  define MONITOR_DUAL            0

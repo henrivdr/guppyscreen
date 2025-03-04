@@ -93,44 +93,26 @@ set( CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib )
 set(BIN_NAME "guppyscreen")
 add_executable(${BIN_NAME} ${MAINSRC} ${CSRCS})
 
-# kd_graphic_mode target
-add_executable(kd_graphic_mode ${LVGL_DIR}/src/kd_graphic_mode.cpp)
-target_link_libraries(kd_graphic_mode ${EXTRA_LIBS})
+if(DEFINED CROSS_COMPILE)
+    # kd_graphic_mode target
+    add_executable(kd_graphic_mode ${LVGL_DIR}/src/kd_graphic_mode.cpp)
+    target_link_libraries(kd_graphic_mode ${EXTRA_LIBS})
+endif()
 
+# lv_drivers
+# ----------
 set(USE_WAYLAND 1)
-# # set(BUILD_SHARED_LIBS OFF)
-
-    add_subdirectory(lv_drivers)
-    target_link_libraries(guppyscreen lv_drivers)
-
-# # target_link_libraries(guppyscreen gtk)
-# # target_link_libraries(guppyscreen wayland-client)
-# # target_link_libraries(guppyscreen wayland-cursor)
-# # target_link_libraries(guppyscreen xkbcommon)
-
-# # add_subdirectory(lv_drivers/wayland EXCLUDE_FROM_ALL)
-# # target_link_libraries(guppyscreen lv_wayland)
+add_subdirectory(lv_drivers)
+target_link_libraries(guppyscreen lv_drivers)
 
 # SDL3
 # ----
-if(NOT DEFINED CROSS_COMPILE)    
 # https://wiki.libsdl.org/SDL3/README/cmake
-## This works for tests and examples!
-## SDL_SHARED=OFF 
-## SDL_STATIC=ON 
-## SDL_EXAMPLES=ON 
-## SDL_TESTS=ON 
-## SDL_X11=OFF 
-## SDL_WAYLAND=ON  ON
-## CMAKE_BUILD_TYPE=Release
-
+if(NOT DEFINED CROSS_COMPILE)    
     set(SDL_EXAMPLES OFF)
     set(SDL_TESTS OFF)
-
-    set(SDL_SHARED OFF)
-    # set(SDL_DEPS_SHARED OFF)
+    set(SDL_SHARED OFF)    
     set(SDL_STATIC ON)
-
     set(SDL_ALSA OFF)
     set(SDL_DBUS OFF)
     set(SDL_IBUS OFF)
@@ -141,9 +123,8 @@ if(NOT DEFINED CROSS_COMPILE)
     set(SDL_OPENGL OFF)
     set(SDL_PULSEAUDIO OFF)
     set(SDL_VIRTUAL_JOYSTICK OFF)
-    set(SDL_WAYLAND  ON)
-    # set(SDL_WAYLAND_SHARED  OFF)
-    set(SDL_X11 OFF)  # HvdR Why does it segfault if it is ON?
+    set(SDL_WAYLAND  ON)    
+    set(SDL_X11 ON)  # HvdR Why does it segfault if it is ON?
     add_subdirectory(deps/SDL EXCLUDE_FROM_ALL)
     target_link_libraries(guppyscreen SDL3::SDL3 )
 endif()
@@ -204,9 +185,6 @@ add_dependencies(guppyscreen wpaclient)
 
 # Link libraries
 target_link_libraries(${BIN_NAME} ${EXTRA_LIBS}
-    #-L../libhv/lib -l:libhv.a    #only needed for Make option.
-    # -Ldeps/SDL     -l:libSDL3.a
-    # -L../spdlog/build -l:libspdlog.a    
     -L../wpa_supplicant/wpa_supplicant/ -l:libwpa_client.a
     )
 
@@ -214,16 +192,14 @@ target_link_libraries(${BIN_NAME} ${EXTRA_LIBS}
 install(TARGETS ${BIN_NAME} DESTINATION bin)
 
 # Clean-up targets
-# add_custom_target(clean-all COMMAND rm -rf build)
 add_custom_target(spdlogclean COMMAND rm -rf ../spdlog/build)
 add_custom_target(libhvclean COMMAND make -C ../libhv clean)
 add_custom_target(wpaclean COMMAND make -C ../wpa_supplicant/wpa_supplicant clean )                    
 
-add_custom_target(clean-all
-    #  COMMAND rm -rf ../build
-    COMMAND rm -rf ../spdlog/build
-    COMMAND make -C ../libhv clean
-    COMMAND make -C ../wpa_supplicant/wpa_supplicant clean                  
+add_custom_target(clean-deps   
+    DEPENDS libhvclean    
+    DEPENDS spdlogclean
+    DEPENDS wpaclean    
 )
 
 # Build dependencies
