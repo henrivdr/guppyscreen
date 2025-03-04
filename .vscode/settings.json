@@ -1,0 +1,16 @@
+{
+    "files.associations": {
+        "*.h": "cpp",
+        "any": "c",
+        "complex": "c",
+        "cstdint": "c",
+        "cstdlib": "cpp",
+        "*.ipp": "cpp",
+        "*.tcc": "cpp",
+        "bitset": "cpp",
+        "format": "cpp",
+        "mutex": "cpp",
+        "shared_mutex": "cpp",
+        "regex": "cpp"
+    }
+}
