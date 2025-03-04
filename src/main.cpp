@@ -15,12 +15,13 @@ namespace fs = std::experimental::filesystem;
 
 #ifdef SIMULATOR
 #define SDL_MAIN_HANDLED /*To fix SDL's "undefined reference to WinMain" issue*/
-#include <SDL2/SDL.h>
+#include <SDL3/SDL.h>
+//HvdR #include <SDL.h>
 #include "lv_drivers/sdl/sdl.h"
 
 static int tick_thread(void *data);
 
-#endif // SIMUALTOR
+#endif // SIMULATOR
 
 static void hal_init(lv_color_t p, lv_color_t s);
 
