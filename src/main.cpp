@@ -118,6 +118,14 @@ static void hal_init(lv_color_t primary, lv_color_t secondary)
 {
   /* Use the 'monitor' driver which creates window on PC's monitor to simulate a display*/
   sdl_init();
+
+  auto driver = SDL_GetCurrentVideoDriver();  
+  if ( driver == NULL)  {
+    spdlog::error("Failed to initialize SDL.\nIf you are running this with sudo, try setting the XDG_RUNTIME_DIR=/run/user/$(id -u) environemnt variable.");
+    exit(1);
+  }
+  SDL_Log("Video driver [%s]", driver);
+  
   /* Tick init.
    * You have to call 'lv_tick_inc()' in periodically to inform LittelvGL about
    * how much time were elapsed Create an SDL thread to do this*/
