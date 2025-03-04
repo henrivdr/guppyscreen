@@ -47,6 +47,11 @@ void WpaEvent::register_callback(const std::string &name,
 
 void WpaEvent::init_wpa() {
   // TODO: retries
+
+#ifdef SIMULATOR
+  //TODO: Find a better way of excluding wpa in simulator.
+  return;
+#endif
   
   std::string wpa_socket = Config::get_instance()->get<std::string>("/wpa_supplicant");
   if (fs::is_directory(fs::status(wpa_socket))) {
