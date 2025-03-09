@@ -8,5 +8,5 @@ make build
 
 # why does this go into a loop?
 # make clean
-# cmake -S . -B build
-# cmake --build build
+# cmake -S . -B build_printer
+# cmake --build build_printer

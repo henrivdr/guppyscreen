@@ -13,10 +13,6 @@ if(CROSS_COMPILE)
     set(CMAKE_STRIP        "${CMAKE_SOURCE_DIR}/../mips-gcc720-glibc229/bin/${CROSS_COMPILE}strip")
 endif()
 
-# Set source directories
-set(LVGL_DIR_NAME "lvgl")
-set(LVGL_DIR ".")
-
 # Compiler and linker flags
 set(WARNINGS "-Wall -Wextra -Wno-unused-function -Wno-error=strict-prototypes -Wpointer-arith \
     -fno-strict-aliasing -Wno-error=cpp -Wuninitialized -Wmaybe-uninitialized -Wno-unused-parameter \
@@ -28,21 +24,13 @@ set(WARNINGS "-Wall -Wextra -Wno-unused-function -Wno-error=strict-prototypes -W
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3 -g0 -MD -MP ${WARNINGS}")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -g0 -MD -MP ${WARNINGS} -std=c++17")
-# set(CMAKE_EXE_LINKER_FLAGS "-static -lm -latomic -lpthread -lstdc++exp ")
 set(CMAKE_EXE_LINKER_FLAGS " -lm -latomic -lpthread -lstdc++exp ")
-# link_directories(/usr/lib/i386-linux-gnu/ /usr/lib/x86_64-linux-gnu/
-# link_directories(/usr/lib/i386-linux-gnu/)
-# link_directories(AFTER /usr/lib/x86_64-linux-gnu/)
 
 # Include directories
 include_directories(
-    ${LVGL_DIR}
-    ${LVGL_DIR}/lvgl
-    ${LVGL_DIR}/lv_touch_calibration
-    spdlog/include
-    # libhv/include # Only needed for Make option.
+    ${CMAKE_SOURCE_DIR}    
+    ${CMAKE_SOURCE_DIR}/lv_touch_calibration    
     wpa_supplicant/src/common
-    # deps/SDL/include
 )
 
 # Define preprocessor macros
@@ -69,19 +57,19 @@ if(NOT DEFINED CROSS_COMPILE)
 endif()
 
 # Collect source files
-file(GLOB MAINSRC "${LVGL_DIR}/src/*.cpp")
+file(GLOB MAINSRC "${CMAKE_SOURCE_DIR}/src/*.cpp")
 list(FILTER MAINSRC EXCLUDE REGEX ".*kd_graphic_mode\\.cpp")
 
 file(GLOB CSRCS 
-    "${LVGL_DIR}/assets/*.c"
-    "${LVGL_DIR}/lv_touch_calibration/*.c"
+    "${CMAKE_SOURCE_DIR}/assets/*.c"
+    "${CMAKE_SOURCE_DIR}/lv_touch_calibration/*.c"
 )
 
 if(GUPPY_THEME STREQUAL "zbolt")    
-    file(GLOB THEME_SRC "${LVGL_DIR}/assets/zbolt/*.c")
+    file(GLOB THEME_SRC "${CMAKE_SOURCE_DIR}/assets/zbolt/*.c")
     add_definitions(-DZBOLT)
 else()    
-    file(GLOB THEME_SRC "${LVGL_DIR}/assets/${ASSET_DIR}/*.c")
+    file(GLOB THEME_SRC "${CMAKE_SOURCE_DIR}/assets/${ASSET_DIR}/*.c")
 endif()
 
 list(APPEND CSRCS ${THEME_SRC})
@@ -95,7 +83,7 @@ add_executable(${BIN_NAME} ${MAINSRC} ${CSRCS})
 
 if(DEFINED CROSS_COMPILE)
     # kd_graphic_mode target
-    add_executable(kd_graphic_mode ${LVGL_DIR}/src/kd_graphic_mode.cpp)
+    add_executable(kd_graphic_mode ${CMAKE_SOURCE_DIR}/src/kd_graphic_mode.cpp)
     target_link_libraries(kd_graphic_mode ${EXTRA_LIBS})
 endif()
 
@@ -111,6 +99,7 @@ target_link_libraries(guppyscreen lv_drivers)
 if(NOT DEFINED CROSS_COMPILE)    
     set(SDL_EXAMPLES OFF)
     set(SDL_TESTS OFF)
+    set(SDL_TEST_LIBRARY OFF)
     set(SDL_SHARED OFF)    
     set(SDL_STATIC ON)
     set(SDL_ALSA OFF)
@@ -124,7 +113,7 @@ if(NOT DEFINED CROSS_COMPILE)
     set(SDL_PULSEAUDIO OFF)
     set(SDL_VIRTUAL_JOYSTICK OFF)
     set(SDL_WAYLAND  ON)    
-    set(SDL_X11 ON)  # HvdR Why does it segfault if it is ON?
+    set(SDL_X11 ON)  # HvdR Why does it (sometimes) segfault if it is ON?
     add_subdirectory(deps/SDL EXCLUDE_FROM_ALL)
     target_link_libraries(guppyscreen SDL3::SDL3 )
 endif()
@@ -136,8 +125,13 @@ target_link_libraries(guppyscreen spdlog)
 
 # lvgl
 # ----
-set(LV_CONF_PATH ${CMAKE_CURRENT_SOURCE_DIR}/src/lv_conf.h CACHE STRING "" FORCE)
+set(LV_CONF_BUILD_DISABLE_THORVG_INTERNAL ON CACHE STRING "" FORCE)
+set(LV_CONF_BUILD_DISABLE_EXAMPLES ON CACHE STRING "" FORCE)
+set(LV_CONF_BUILD_DISABLE_DEMOS ON CACHE STRING "" FORCE)
+set(LV_CONF_INCLUDE_SIMPLE ON CACHE STRING "" FORCE)
 add_subdirectory(lvgl EXCLUDE_FROM_ALL)
+# target_compile_definitions(lvgl PRIVATE LV_CONF_INCLUDE_SIMPLE)
+# target_compile_definitions(lvgl PRIVATE LV_CONF_PATH=${CMAKE_SOURCE_DIR}/lv_conf.h)
 # Fetch LVGL from GitHub
 # include(FetchContent)
 # FetchContent_Declare(
@@ -164,17 +158,6 @@ set(WITH_HTTP_CLIENT ON CACHE STRING "" FORCE)
 set(BUILD_EXAMPLES OFF CACHE STRING "" FORCE)
 add_subdirectory(libhv EXCLUDE_FROM_ALL)
 target_link_libraries(guppyscreen hv_static)
-
-# # make option:
-# add_custom_target(build_libhv ALL COMMAND make -C ../libhv -j$(nproc) libhv )
-# add_library(libhv STATIC IMPORTED)
-# set_target_properties(libhv PROPERTIES
-#   IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/libhv/lib/libhv.a # Make sure to use absolute path here
-#   INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR}/libhv/include
-# #   INTERFACE_COMPILE_DEFINITIONS "USING_THELIB;THELIB_STATIC"
-# )
-# add_dependencies(libhv build_libhv)
-# add_dependencies(guppyscreen libhv)
 
 # wpa_supplicant
 # --------------
