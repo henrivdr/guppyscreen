@@ -45,24 +45,25 @@ SensorContainer::SensorContainer(KWebSocketClient &c,
     lv_obj_set_style_pad_all(sensor_cont, 0, 0);
 
     lv_img_set_src(sensor_img, img);
-    lv_obj_align(sensor_img, LV_ALIGN_LEFT_MID, 0, 0);
+    lv_obj_set_style_img_recolor(sensor_img, color, _LV_STYLE_STATE_CMP_DIFF_REDRAW);
+    lv_obj_align(sensor_img, LV_ALIGN_LEFT_MID, -12 * width_scale, 0);
 
     lv_label_set_text(sensor_label, text);
-    lv_obj_align_to(sensor_label, sensor_img, LV_ALIGN_OUT_RIGHT_MID, -7 * width_scale, 0);
+    lv_obj_align_to(sensor_label, sensor_img, LV_ALIGN_OUT_RIGHT_MID, -10 * width_scale, 0);
 
     lv_label_set_text(value_label, "0");
-    lv_obj_set_width(value_label, 50 * width_scale);
+    lv_obj_set_width(value_label, 62 * width_scale);
     lv_obj_align(value_label, LV_ALIGN_RIGHT_MID, -75 * width_scale, 0);
     lv_obj_set_style_pad_all(value_label, 8 * width_scale, 0);
 
     lv_label_set_text(divider_label, "/");
     lv_obj_set_width(divider_label, 50 * width_scale);
-    lv_obj_align(divider_label, LV_ALIGN_RIGHT_MID, -32 * width_scale, 0);
+    lv_obj_align(divider_label, LV_ALIGN_RIGHT_MID, -36 * width_scale, 0);
     lv_obj_set_style_pad_all(divider_label, 8 * width_scale, 0);
 
     if (show_target || can_edit) {
       lv_label_set_text(target_label, "0");
-      lv_obj_set_width(target_label, 60 * width_scale);
+      lv_obj_set_width(target_label, 68 * width_scale);
       lv_obj_align(target_label, LV_ALIGN_RIGHT_MID, 0, 0);
       lv_obj_set_style_pad_all(target_label, 8 * width_scale, 0);
     } else {

@@ -20,8 +20,9 @@ LV_IMG_DECLARE(back);
 FineTunePanel::FineTunePanel(KWebSocketClient &websocket_client, std::mutex &l)
   : NotifyConsumer(l)
   , ws(websocket_client)
-  , panel_cont(lv_obj_create(lv_scr_act()))
-  , values_cont(lv_obj_create(panel_cont))
+  , panel_cont(lv_obj_create(lv_scr_act())) // Top/Left Grid
+  , panel_cont_R(lv_obj_create(lv_scr_act())) // Right Grid
+  , panel_cont_B(lv_obj_create(lv_scr_act())) // Bottom Grid
   , zreset_btn(panel_cont, &refresh_img, "Reset Z", &FineTunePanel::_handle_zoffset, this)
   , zup_btn(panel_cont, &z_closer, "Z+", &FineTunePanel::_handle_zoffset, this)
   , zdown_btn(panel_cont, &z_farther, "Z-", &FineTunePanel::_handle_zoffset, this)
@@ -34,59 +35,86 @@ FineTunePanel::FineTunePanel(KWebSocketClient &websocket_client, std::mutex &l)
   , flow_reset_btn(panel_cont, &refresh_img, "Flow Reset", &FineTunePanel::_handle_flow, this)
   , flow_up_btn(panel_cont, &flow_up_img, "Flow+", &FineTunePanel::_handle_flow, this)
   , flow_down_btn(panel_cont, &flow_down_img, "Flow-", &FineTunePanel::_handle_flow, this)
-  , back_btn(panel_cont, &back, "Back", &FineTunePanel::_handle_callback, this)
-  , zoffset_selector(panel_cont, "Z (mm) - PA (mm/s)",
-		     {"0.01", "0.05", "0.10", ""}, 0, 30, 15, &FineTunePanel::_handle_callback, this)
-  , multipler_selector(panel_cont, "Multipler Step (%)",
-		       {"1", "5", "10", "25", ""}, 0, 40, 15, &FineTunePanel::_handle_callback, this)
-  , z_offset(values_cont, &home_z, 150, 100, 15, "0.0 mm")
-  , pa(values_cont, &pa_plus_img, 150, 100, 15, "0.0 mm/s")
-  , speed_factor(values_cont, &speed_up_img, 150, 100, 15 ,"100%")
-  , flow_factor(values_cont, &flow_up_img, 150, 100, 15, "100%")
+  , back_btn(panel_cont_R, &back, "Back", &FineTunePanel::_handle_callback, this)
+
+  , zoffset_selector(panel_cont_B, "Z (mm) - PA (mm/s)",
+		     {"0.01", "0.05", "0.10", ""}, 0, 40, 15, &FineTunePanel::_handle_callback, this)
+  , multipler_selector(panel_cont_B, "Multipler Step (%)",
+		       {"1", "5", "10", "25", ""}, 0, 50, 15, &FineTunePanel::_handle_callback, this)
+  
+  , z_offset(panel_cont_R, &home_z, 150, 100, 15, "0.0 mm")
+  , pa(panel_cont_R, &pa_plus_img, 150, 110, 15, "0.0 mm/s")
+  , speed_factor(panel_cont_R, &speed_up_img, 150, 100, 15 ,"100%")
+  , flow_factor(panel_cont_R, &flow_up_img, 150, 100, 15, "100%")
 {
   lv_obj_move_background(panel_cont);
-  
-  lv_obj_set_size(panel_cont, LV_PCT(100), LV_PCT(100));
+  lv_obj_set_layout(panel_cont, LV_LAYOUT_GRID);    
+  lv_obj_set_size(panel_cont, LV_PCT(75), LV_PCT(100));
   lv_obj_clear_flag(panel_cont, LV_OBJ_FLAG_SCROLLABLE);
+  lv_obj_set_style_text_font(panel_cont, &lv_font_montserrat_12, LV_STATE_DEFAULT);
+  lv_obj_set_pos(panel_cont, 0, 0);
 
-  lv_obj_set_size(values_cont, LV_PCT(20), LV_PCT(80));
-  lv_obj_clear_flag(values_cont, LV_OBJ_FLAG_SCROLLABLE);
-  lv_obj_set_style_pad_all(values_cont, 0, 0);
-  lv_obj_set_flex_flow(values_cont, LV_FLEX_FLOW_COLUMN);
-  lv_obj_set_flex_align(values_cont, LV_FLEX_ALIGN_SPACE_EVENLY, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+  lv_obj_move_background(panel_cont_R);
+  lv_obj_set_layout(panel_cont_R, LV_LAYOUT_GRID);
+  lv_obj_set_size(panel_cont_R, LV_PCT(100-75), LV_PCT(100));
+  lv_obj_clear_flag(panel_cont_R, LV_OBJ_FLAG_SCROLLABLE);
+  lv_obj_set_style_text_font(panel_cont_R, &lv_font_montserrat_12, LV_STATE_DEFAULT);
+  lv_obj_set_pos(panel_cont_R, LV_PCT(75), 0);
 
-  static lv_coord_t grid_main_row_dsc[] = {LV_GRID_FR(1), LV_GRID_FR(1), LV_GRID_FR(1), LV_GRID_FR(1),
-    LV_GRID_TEMPLATE_LAST};
-  static lv_coord_t grid_main_col_dsc[] = {LV_GRID_FR(1), LV_GRID_FR(1), LV_GRID_FR(1), LV_GRID_FR(1),
-    LV_GRID_FR(1), LV_GRID_TEMPLATE_LAST};
+  lv_obj_move_background(panel_cont_B);
+  lv_obj_set_layout(panel_cont_B, LV_LAYOUT_GRID);
+  lv_obj_set_size(panel_cont_B, LV_PCT(75), LV_PCT(100-75));
+  lv_obj_clear_flag(panel_cont_B, LV_OBJ_FLAG_SCROLLABLE);
+  lv_obj_set_style_text_font(panel_cont_B, &lv_font_montserrat_12, LV_STATE_DEFAULT);
+  lv_obj_set_pos(panel_cont_B, 0, LV_PCT(75));
 
-  lv_obj_set_grid_dsc_array(panel_cont, grid_main_col_dsc, grid_main_row_dsc);
+  static lv_coord_t grid_main_row_dsc_L[] = {LV_GRID_FR(1), LV_GRID_FR(1), LV_GRID_FR(1), LV_GRID_FR(1),
+   LV_GRID_TEMPLATE_LAST};
+  static lv_coord_t grid_main_col_dsc_L[] = {LV_GRID_FR(1), LV_GRID_FR(1), LV_GRID_FR(1), LV_GRID_FR(1),
+   LV_GRID_TEMPLATE_LAST};
+   lv_obj_set_grid_dsc_array(panel_cont, grid_main_col_dsc_L, grid_main_row_dsc_L);
+  
+  static lv_coord_t grid_main_row_dsc_R[] = {LV_GRID_FR(1), LV_GRID_FR(1), LV_GRID_FR(1), LV_GRID_FR(1),
+   LV_GRID_FR(1), LV_GRID_TEMPLATE_LAST};
+  static lv_coord_t grid_main_col_dsc_R[] = {LV_GRID_FR(1), LV_GRID_TEMPLATE_LAST};
+  lv_obj_set_grid_dsc_array(panel_cont_R, grid_main_col_dsc_R, grid_main_row_dsc_R);
 
-  // col 1
+  static lv_coord_t grid_main_row_dsc_B[] = {LV_GRID_FR(1), LV_GRID_TEMPLATE_LAST};
+   static lv_coord_t grid_main_col_dsc_B[] = {LV_GRID_FR(1), LV_GRID_FR(1), LV_GRID_TEMPLATE_LAST};
+  lv_obj_set_grid_dsc_array(panel_cont_B, grid_main_col_dsc_B, grid_main_row_dsc_B);
+
+  // Top/Left Grid col 1 row 1-3
   lv_obj_set_grid_cell(zreset_btn.get_container(), LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_CENTER, 0, 1);
   lv_obj_set_grid_cell(zup_btn.get_container(), LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_CENTER, 1, 1);
   lv_obj_set_grid_cell(zdown_btn.get_container(), LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_CENTER, 2, 1);
-  lv_obj_set_grid_cell(zoffset_selector.get_container(), LV_GRID_ALIGN_CENTER, 0, 2, LV_GRID_ALIGN_CENTER, 3, 1);
-
-  // col 2
+ 
+  // Top/Left Grid col 2 row 1-3
   lv_obj_set_grid_cell(pareset_btn.get_container(), LV_GRID_ALIGN_CENTER, 1, 1, LV_GRID_ALIGN_CENTER, 0, 1);
   lv_obj_set_grid_cell(paup_btn.get_container(), LV_GRID_ALIGN_CENTER, 1, 1, LV_GRID_ALIGN_CENTER, 1, 1);
   lv_obj_set_grid_cell(padown_btn.get_container(), LV_GRID_ALIGN_CENTER, 1, 1, LV_GRID_ALIGN_CENTER, 2, 1);
   
-  // col 3
+  // Top/Left Grid col 3 row 1-3
   lv_obj_set_grid_cell(speed_reset_btn.get_container(), LV_GRID_ALIGN_CENTER, 2, 1, LV_GRID_ALIGN_CENTER, 0, 1);
   lv_obj_set_grid_cell(speed_up_btn.get_container(), LV_GRID_ALIGN_CENTER, 2, 1, LV_GRID_ALIGN_CENTER, 1, 1);
   lv_obj_set_grid_cell(speed_down_btn.get_container(), LV_GRID_ALIGN_CENTER, 2, 1, LV_GRID_ALIGN_CENTER, 2, 1);
-  lv_obj_set_grid_cell(multipler_selector.get_container(), LV_GRID_ALIGN_CENTER, 2, 2, LV_GRID_ALIGN_CENTER, 3, 1);  
 
-  // col 4
+  // Top/Left Grid col 4 row 1-3
   lv_obj_set_grid_cell(flow_reset_btn.get_container(), LV_GRID_ALIGN_CENTER, 3, 1, LV_GRID_ALIGN_CENTER, 0, 1);
   lv_obj_set_grid_cell(flow_up_btn.get_container(), LV_GRID_ALIGN_CENTER, 3, 1, LV_GRID_ALIGN_CENTER, 1, 1);
   lv_obj_set_grid_cell(flow_down_btn.get_container(), LV_GRID_ALIGN_CENTER, 3, 1, LV_GRID_ALIGN_CENTER, 2, 1);
 
-  // col 5
-  lv_obj_set_grid_cell(values_cont, LV_GRID_ALIGN_CENTER, 4, 1, LV_GRID_ALIGN_CENTER, 0, 3);  
-  lv_obj_set_grid_cell(back_btn.get_container(), LV_GRID_ALIGN_CENTER, 4, 1, LV_GRID_ALIGN_CENTER, 3, 1);
+  // Bottom Grid col 1-2 row 1
+  lv_obj_set_grid_cell(multipler_selector.get_container(), LV_GRID_ALIGN_CENTER, 1, 1, LV_GRID_ALIGN_CENTER, 0, 1);
+  lv_obj_set_grid_cell(zoffset_selector.get_container(), LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_CENTER, 0, 1);
+ 
+  // Right Grid col 1 row 1-4
+  lv_obj_set_grid_cell(z_offset.get_container(), LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_CENTER, 0, 1);
+  lv_obj_set_grid_cell(pa.get_container(), LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_CENTER, 1, 1);
+  lv_obj_set_grid_cell(speed_factor.get_container(), LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_CENTER, 2, 1);
+  lv_obj_set_grid_cell(flow_factor.get_container(), LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_CENTER, 3, 1);
+
+  // Right Grid col 1 row 5
+  lv_obj_set_grid_cell(back_btn.get_container(), LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_CENTER, 4, 1);
 
   ws.register_notify_update(this);
 }
@@ -94,7 +122,11 @@ FineTunePanel::FineTunePanel(KWebSocketClient &websocket_client, std::mutex &l)
 FineTunePanel::~FineTunePanel() {
   if (panel_cont != NULL) {
     lv_obj_del(panel_cont);
+    lv_obj_del(panel_cont_R);
+    lv_obj_del(panel_cont_B);
     panel_cont = NULL;
+    panel_cont_R = NULL;
+    panel_cont_B = NULL;
   }
   ws.unregister_notify_update(this);
 }
@@ -140,6 +172,8 @@ void FineTunePanel::foreground() {
   }
   
   lv_obj_move_foreground(panel_cont);
+  lv_obj_move_foreground(panel_cont_R);
+  lv_obj_move_foreground(panel_cont_B);
 }
 
 void FineTunePanel::consume(json &j) {
@@ -186,6 +220,8 @@ void FineTunePanel::handle_callback(lv_event_t *e) {
     lv_obj_t *btn = lv_event_get_current_target(e);
     if (btn == back_btn.get_container()) {
       lv_obj_move_background(panel_cont);
+      lv_obj_move_background(panel_cont_R);
+      lv_obj_move_background(panel_cont_B);
     }
   }
 }

@@ -50,8 +50,9 @@ class FineTunePanel : public NotifyConsumer {
 
  private:
   KWebSocketClient &ws;
-  lv_obj_t *panel_cont;
-  lv_obj_t *values_cont;
+  lv_obj_t *panel_cont; // Top/Feft Grid
+  lv_obj_t *panel_cont_R; // Right Grid
+  lv_obj_t *panel_cont_B; // Bottom Grid  
   ButtonContainer zreset_btn;
   ButtonContainer zup_btn;
   ButtonContainer zdown_btn;

@@ -77,6 +77,7 @@ BedMeshPanel::BedMeshPanel(KWebSocketClient &c, std::mutex &l)
   lv_obj_set_style_pad_top(profile_info, 5, LV_PART_ITEMS | LV_STATE_DEFAULT);
   lv_obj_set_style_pad_bottom(profile_info, 5, LV_PART_ITEMS | LV_STATE_DEFAULT);
   lv_obj_set_style_border_side(profile_info, LV_BORDER_SIDE_BOTTOM, 0);
+  lv_obj_set_style_text_font(profile_info, &lv_font_montserrat_12, LV_STATE_DEFAULT);  
 
   // button controls
   lv_obj_set_width(controls_cont, LV_PCT(100));

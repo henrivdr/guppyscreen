@@ -88,7 +88,7 @@ ExtruderPanel::ExtruderPanel(KWebSocketClient &websocket_client,
   
   lv_obj_set_grid_dsc_array(panel_cont, grid_main_col_dsc, grid_main_row_dsc);
   lv_obj_add_flag(extruder_temp.get_sensor(), LV_OBJ_FLAG_FLOATING);
-  lv_obj_align(extruder_temp.get_sensor(), LV_ALIGN_TOP_LEFT, 50, 0);
+
 
   // lv_obj_set_size(extruder_temp.get_sensor(), 350, 60);
   // col 0
@@ -116,6 +116,7 @@ ExtruderPanel::ExtruderPanel(KWebSocketClient &websocket_client,
   // lv_obj_set_grid_cell(extrude_btn.get_container(), LV_GRID_ALIGN_CENTER, 2, 1, LV_GRID_ALIGN_START, 2, 2);
   // lv_obj_set_grid_cell(back_btn.get_container(), LV_GRID_ALIGN_END, 2, 1, LV_GRID_ALIGN_END, 2, 2);
   
+  lv_obj_align_to(extruder_temp.get_sensor(), speed_selector.get_container(), LV_ALIGN_OUT_TOP_LEFT, 0, 0);
 
   ws.register_notify_update(this);    
 }

@@ -932,8 +932,8 @@ e.g. "stm32f769xx.h" or "stm32f429xx.h"*/
 #define LV_USE_ASSERT_NULL          1   /*Check if the parameter is NULL. (Very fast, recommended)*/
 #define LV_USE_ASSERT_MALLOC        1   /*Checks is the memory is successfully allocated or no. (Very fast, recommended)*/
 #define LV_USE_ASSERT_STYLE         1   /*Check if the styles are properly initialized. (Very fast, recommended)*/
-#define LV_USE_ASSERT_MEM_INTEGRITY 1   /*Check the integrity of `lv_mem` after critical operations. (Slow)*/
-#define LV_USE_ASSERT_OBJ           1   /*Check the object's type and existence (e.g. not deleted). (Slow)*/
+#define LV_USE_ASSERT_MEM_INTEGRITY 0   /*Check the integrity of `lv_mem` after critical operations. (Slow)*/
+#define LV_USE_ASSERT_OBJ           0   /*Check the object's type and existence (e.g. not deleted). (Slow)*/
 
 /*Add a custom handler when assert happens e.g. to restart the MCU*/
 #define LV_ASSERT_HANDLER_INCLUDE   <stdint.h>
@@ -1058,7 +1058,12 @@ e.g. "stm32f769xx.h" or "stm32f429xx.h"*/
 #define LV_FONT_CUSTOM_DECLARE
 
 /*Always set a default font*/
-#define LV_FONT_DEFAULT &lv_font_montserrat_16
+#ifdef GUPPY_SMALL_SCREEN
+    #define LV_FONT_DEFAULT &lv_font_montserrat_14
+#else
+    #define LV_FONT_DEFAULT &lv_font_montserrat_16
+#endif
+
 
 /*Enable handling large font and/or fonts with a lot of characters.
  *The limit depends on the font size, font face and bpp.
@@ -1240,11 +1245,11 @@ e.g. "stm32f769xx.h" or "stm32f429xx.h"*/
 # define LV_THEME_DEFAULT_TRANSITON_TIME    80
 #endif /*LV_USE_THEME_DEFAULT*/
 
-/*An very simple them that is a good starting point for a custom theme*/
- #define LV_USE_THEME_BASIC    1
+/*An very simple theme that is a good starting point for a custom theme*/
+ #define LV_USE_THEME_BASIC    0
 
 /*A theme designed for monochrome displays*/
-#define LV_USE_THEME_MONO       1
+#define LV_USE_THEME_MONO       0
 
 /*-----------
  * Layouts
@@ -1351,4 +1356,66 @@ e.g. "stm32f769xx.h" or "stm32f429xx.h"*/
 #endif /*End of "Content enable"*/
 
 
-#endif // SIMULATORP
+#endif // SIMULATOR
+
+#define LV_USE_DRAW_SW 0
+#if LV_USE_DRAW_SW == 1
+    /*
+     * Selectively disable color format support in order to reduce code size.
+     * NOTE: some features use certain color formats internally, e.g.
+     * - gradients use RGB888
+     * - bitmaps with transparency may use ARGB8888
+     */
+    #define LV_DRAW_SW_SUPPORT_RGB565       1
+    #define LV_DRAW_SW_SUPPORT_RGB565A8     1
+    #define LV_DRAW_SW_SUPPORT_RGB888       1
+    #define LV_DRAW_SW_SUPPORT_XRGB8888     1
+    #define LV_DRAW_SW_SUPPORT_ARGB8888     1
+    #define LV_DRAW_SW_SUPPORT_L8           1
+    #define LV_DRAW_SW_SUPPORT_AL88         1
+    #define LV_DRAW_SW_SUPPORT_A8           1
+    #define LV_DRAW_SW_SUPPORT_I1           1
+
+    /* The threshold of the luminance to consider a pixel as
+     * active in indexed color format */
+    #define LV_DRAW_SW_I1_LUM_THRESHOLD 127
+
+    /** Set number of draw units.
+     *  - > 1 requires operating system to be enabled in `LV_USE_OS`.
+     *  - > 1 means multiple threads will render the screen in parallel. */
+    #define LV_DRAW_SW_DRAW_UNIT_CNT    1
+
+    /** Use Arm-2D to accelerate software (sw) rendering. */
+    #define LV_USE_DRAW_ARM2D_SYNC      0
+
+    /** Enable native helium assembly to be compiled. */
+    #define LV_USE_NATIVE_HELIUM_ASM    0
+
+    /**
+     * - 0: Use a simple renderer capable of drawing only simple rectangles with gradient, images, text, and straight lines only.
+     * - 1: Use a complex renderer capable of drawing rounded corners, shadow, skew lines, and arcs too. */
+    #define LV_DRAW_SW_COMPLEX          1
+
+    #if LV_DRAW_SW_COMPLEX == 1
+        /** Allow buffering some shadow calculation.
+         *  LV_DRAW_SW_SHADOW_CACHE_SIZE is the maximum shadow size to buffer, where shadow size is
+         *  `shadow_width + radius`.  Caching has LV_DRAW_SW_SHADOW_CACHE_SIZE^2 RAM cost. */
+        #define LV_DRAW_SW_SHADOW_CACHE_SIZE 0
+
+        /** Set number of maximally-cached circle data.
+         *  The circumference of 1/4 circle are saved for anti-aliasing.
+         *  `radius * 4` bytes are used per circle (the most often used radiuses are saved).
+         *  - 0: disables caching */
+        #define LV_DRAW_SW_CIRCLE_CACHE_SIZE 4
+    #endif
+
+    #define  LV_USE_DRAW_SW_ASM     LV_DRAW_SW_ASM_NONE
+
+    #if LV_USE_DRAW_SW_ASM == LV_DRAW_SW_ASM_CUSTOM
+        #define  LV_DRAW_SW_ASM_CUSTOM_INCLUDE ""
+    #endif
+
+    /** Enable drawing complex gradients in software: linear at an angle, radial or conical */
+    #define LV_USE_DRAW_SW_COMPLEX_GRADIENTS    0
+
+#endif
